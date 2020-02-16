@@ -3,6 +3,7 @@ package collector
 import (
 	"log"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/whoisnian/aMonitor-agent/util"
@@ -13,6 +14,7 @@ type basicInfo struct {
 	Kernel   string // 内核版本
 	Hostname string // 主机名
 	CPUModel string // CPU型号
+	CPUCores int64  // CPU核心数
 }
 
 // StartBasic 上报服务器基本信息
@@ -83,7 +85,8 @@ func StartBasic(msgChan chan interface{}) {
 		switch strings.TrimSpace(res[0]) {
 		case "model name":
 			basic.CPUModel = strings.TrimSpace(res[1])
-			break
+		case "cpu cores":
+			basic.CPUCores, _ = strconv.ParseInt(strings.TrimSpace(res[1]), 10, 64)
 		}
 	}
 
