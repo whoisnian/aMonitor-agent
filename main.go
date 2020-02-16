@@ -33,7 +33,7 @@ func main() {
 	// collector开始收集数据
 	collector.Init(CONFIG)
 	go collector.StartBasic(msgChan)
-	//go collector.StartCPU(msgChan)
+	go collector.StartCPU(msgChan)
 	//go collector.StartRAM(msgChan)
 	//go collector.StartLoad(msgChan)
 	//go collector.StartNet(msgChan)
