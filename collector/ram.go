@@ -3,7 +3,6 @@ package collector
 import (
 	"log"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -32,6 +31,7 @@ func StartRAM(msgChan chan interface{}) {
 	defer fi.Close()
 
 	var mem memInfo
+	var value int64
 
 	ticker := time.NewTicker(time.Duration(interval) * time.Second)
 	interrupt := make(chan os.Signal, 1)
@@ -48,10 +48,9 @@ func StartRAM(msgChan chan interface{}) {
 				}
 
 				res := strings.Fields(content[pos:i])
-				if len(res) < 2 {
-					continue
+				if len(res) >= 2 {
+					util.StrToNumber(res[1], &value)
 				}
-				value, _ := strconv.ParseInt(strings.TrimSpace(res[1]), 10, 64)
 				pos = i + 1
 
 				switch res[0] {

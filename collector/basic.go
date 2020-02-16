@@ -3,7 +3,6 @@ package collector
 import (
 	"log"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/whoisnian/aMonitor-agent/util"
@@ -86,7 +85,7 @@ func StartBasic(msgChan chan interface{}) {
 		case "model name":
 			basic.CPUModel = strings.TrimSpace(res[1])
 		case "cpu cores":
-			basic.CPUCores, _ = strconv.ParseInt(strings.TrimSpace(res[1]), 10, 64)
+			util.StrToNumber(res[1], &basic.CPUCores)
 		}
 	}
 

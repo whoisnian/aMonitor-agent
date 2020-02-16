@@ -3,7 +3,6 @@ package collector
 import (
 	"log"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -34,9 +33,9 @@ func StartLoad(msgChan chan interface{}) {
 			content := string(util.SeekAndReadAll(fi))
 
 			res := strings.Fields(content)
-			load.Avg1, _ = strconv.ParseFloat(res[0], 64)
-			load.Avg5, _ = strconv.ParseFloat(res[1], 64)
-			load.Avg15, _ = strconv.ParseFloat(res[2], 64)
+			util.StrToNumber(res[0], &load.Avg1)
+			util.StrToNumber(res[1], &load.Avg5)
+			util.StrToNumber(res[2], &load.Avg15)
 
 			msgChan <- load
 		case <-interrupt:

@@ -1,9 +1,9 @@
 package collector
 
 import (
-	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/whoisnian/aMonitor-agent/util"
@@ -37,6 +37,7 @@ func StartCPU(msgChan chan interface{}) {
 
 	var cur, sav cpuData
 	var load cpuLoad
+	var pos int
 
 	ticker := time.NewTicker(time.Duration(interval) * time.Second)
 	interrupt := make(chan os.Signal, 1)
@@ -44,10 +45,23 @@ func StartCPU(msgChan chan interface{}) {
 		select {
 		case <-ticker.C:
 			content := string(util.SeekAndReadAll(fi))
-			fmt.Sscanf(content, "cpu%d%d%d%d%d%d%d%d%d%d",
-				&cur.user, &cur.nice, &cur.system,
-				&cur.idle, &cur.iowait, &cur.irq, &cur.softirq,
-				&cur.steal, &cur.guest, &cur.guestnice)
+			for pos = 0; pos < len(content); pos++ {
+				if content[pos] == '\n' {
+					break
+				}
+			}
+
+			res := strings.Fields(content[:pos])
+			util.StrToNumber(res[1], &cur.user)
+			util.StrToNumber(res[2], &cur.nice)
+			util.StrToNumber(res[3], &cur.system)
+			util.StrToNumber(res[4], &cur.idle)
+			util.StrToNumber(res[5], &cur.iowait)
+			util.StrToNumber(res[6], &cur.irq)
+			util.StrToNumber(res[7], &cur.softirq)
+			util.StrToNumber(res[8], &cur.steal)
+			util.StrToNumber(res[9], &cur.guest)
+			util.StrToNumber(res[10], &cur.guestnice)
 
 			cur.total = cur.user + cur.nice + cur.system + cur.idle + cur.iowait + cur.irq + cur.softirq + cur.steal
 

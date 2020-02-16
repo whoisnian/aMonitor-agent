@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strconv"
+	"strings"
 )
 
 // FileExists 文件存在且非目录
@@ -42,4 +44,22 @@ func SeekAndReadAll(fi *os.File) []byte {
 		result = append(result, buf[:n]...)
 	}
 	return result
+}
+
+// StrToNumber 字符串转数字(参数为字符串和数值变量指针)
+func StrToNumber(str string, numP interface{}) {
+	str = strings.TrimSpace(str)
+
+	var err error
+	switch p := numP.(type) {
+	case *int64:
+		*p, err = strconv.ParseInt(str, 10, 64)
+	case *uint64:
+		*p, err = strconv.ParseUint(str, 10, 64)
+	case *float64:
+		*p, err = strconv.ParseFloat(str, 64)
+	}
+	if err != nil {
+		log.Panicln(err)
+	}
 }
