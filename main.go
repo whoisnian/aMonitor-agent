@@ -34,7 +34,7 @@ func main() {
 	collector.Init(CONFIG)
 	go collector.StartBasic(msgChan)
 	go collector.StartCPU(msgChan)
-	//go collector.StartRAM(msgChan)
+	go collector.StartRAM(msgChan)
 	//go collector.StartLoad(msgChan)
 	//go collector.StartNet(msgChan)
 
