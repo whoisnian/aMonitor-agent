@@ -33,7 +33,7 @@ func StartRAM(msgChan chan interface{}) {
 	var mem memInfo
 	var value int64
 
-	ticker := time.NewTicker(time.Duration(interval) * time.Second)
+	ticker := time.NewTicker(time.Duration(interval.RAM) * time.Second)
 	interrupt := make(chan os.Signal, 1)
 	for {
 		select {

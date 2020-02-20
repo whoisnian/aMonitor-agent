@@ -64,7 +64,7 @@ func StartBasic(msgChan chan interface{}) {
 	content = string(util.ReadAll(fiHN))
 	basic.Hostname = strings.TrimSpace(content)
 
-	// 从/proc/cpuinfo中读取CPU型号
+	// 从/proc/cpuinfo中读取CPU型号和CPU核心数
 	fiCPU, err := os.Open(cpuinfoFile)
 	if err != nil {
 		log.Panicln(err)

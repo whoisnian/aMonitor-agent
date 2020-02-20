@@ -25,7 +25,7 @@ func StartLoad(msgChan chan interface{}) {
 
 	var load loadInfo
 
-	ticker := time.NewTicker(time.Duration(interval) * time.Second)
+	ticker := time.NewTicker(time.Duration(interval.LOAD) * time.Second)
 	interrupt := make(chan os.Signal, 1)
 	for {
 		select {

@@ -5,6 +5,11 @@
     "http://192.168.1.2:8080"
   ],
   "ListenAddr": "127.0.0.1:8001",
-  "Interval": 5,
+  "Interval": {
+    "CPU": 5,
+    "RAM": 5,
+    "LOAD": 5,
+    "NET": 5
+  },
   "Token": ""
 }

@@ -19,7 +19,7 @@ const hostnameFile = "/proc/sys/kernel/hostname"
 const netDevFile = "/proc/net/dev"
 const sysNetDir = "/sys/class/net/"
 
-var interval int64
+var interval config.Interval
 
 // Init 检查依赖是否存在
 func Init(CONFIG *config.Config) {

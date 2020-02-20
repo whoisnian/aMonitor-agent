@@ -53,7 +53,7 @@ func StartNet(msgChan chan interface{}) {
 	var data netData
 	var load netLoad
 
-	ticker := time.NewTicker(time.Duration(interval) * time.Second)
+	ticker := time.NewTicker(time.Duration(interval.NET) * time.Second)
 	interrupt := make(chan os.Signal, 1)
 	for {
 		select {
@@ -98,8 +98,8 @@ func StartNet(msgChan chan interface{}) {
 			// B ==> KB
 			// load.Rsum >>= 10
 			// load.Tsum >>= 10
-			load.Rrate = load.Rsum / interval
-			load.Trate = load.Tsum / interval
+			load.Rrate = load.Rsum / interval.NET
+			load.Trate = load.Tsum / interval.NET
 
 			if load.Rsum+load.Tsum > 0 {
 				msgChan <- load

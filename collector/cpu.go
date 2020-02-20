@@ -39,7 +39,7 @@ func StartCPU(msgChan chan interface{}) {
 	var load cpuLoad
 	var pos int
 
-	ticker := time.NewTicker(time.Duration(interval) * time.Second)
+	ticker := time.NewTicker(time.Duration(interval.CPU) * time.Second)
 	interrupt := make(chan os.Signal, 1)
 	for {
 		select {
