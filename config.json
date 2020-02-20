@@ -9,7 +9,8 @@
     "CPU": 5,
     "RAM": 5,
     "LOAD": 5,
-    "NET": 5
+    "NET": 5,
+    "MOUNTS": 5
   },
   "Token": ""
 }

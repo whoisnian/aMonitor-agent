@@ -10,10 +10,11 @@ import (
 
 // Interval 监控刷新间隔，单位为秒
 type Interval struct {
-	CPU  int64
-	RAM  int64
-	LOAD int64
-	NET  int64
+	CPU    int64
+	RAM    int64
+	LOAD   int64
+	NET    int64
+	MOUNTS int64
 }
 
 // Config agent配置项

@@ -17,6 +17,7 @@ const osReleaseFile = "/etc/os-release"
 const kernelVersionFile = "/proc/sys/kernel/osrelease"
 const hostnameFile = "/proc/sys/kernel/hostname"
 const netDevFile = "/proc/net/dev"
+const mountsFile = "/proc/mounts"
 const sysNetDir = "/sys/class/net/"
 
 var interval config.Interval
@@ -35,7 +36,8 @@ func Init(CONFIG *config.Config) {
 		osReleaseFile,
 		kernelVersionFile,
 		hostnameFile,
-		netDevFile}
+		netDevFile,
+		mountsFile}
 	for _, file := range fileArray {
 		if !util.FileExists(file) {
 			log.Panicf("Can't find file '%s'", file)
