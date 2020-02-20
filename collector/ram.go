@@ -48,11 +48,12 @@ func StartRAM(msgChan chan interface{}) {
 				}
 
 				res := strings.Fields(content[pos:i])
-				if len(res) >= 2 {
-					util.StrToNumber(res[1], &value)
-				}
 				pos = i + 1
+				if len(res) < 2 {
+					continue
+				}
 
+				util.StrToNumber(res[1], &value)
 				switch res[0] {
 				case "MemTotal:":
 					mem.MTotal = value
