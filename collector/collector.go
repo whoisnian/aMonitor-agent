@@ -17,12 +17,14 @@ const osReleaseFile = "/etc/os-release"
 const kernelVersionFile = "/proc/sys/kernel/osrelease"
 const hostnameFile = "/proc/sys/kernel/hostname"
 const netDevFile = "/proc/net/dev"
+const sysNetDir = "/sys/class/net/"
 
 var interval int64
 
-// Init 检查依赖文件是否存在
+// Init 检查依赖是否存在
 func Init(CONFIG *config.Config) {
 	interval = CONFIG.Interval
+
 	fileArray := []string{
 		statFile,
 		uptimeFile,
@@ -36,7 +38,14 @@ func Init(CONFIG *config.Config) {
 		netDevFile}
 	for _, file := range fileArray {
 		if !util.FileExists(file) {
-			log.Panicf("Can't find proc file '%s'", file)
+			log.Panicf("Can't find file '%s'", file)
+		}
+	}
+
+	dirArray := []string{sysNetDir}
+	for _, dir := range dirArray {
+		if !util.DirExists(dir) {
+			log.Panicf("Can't find dir '%s'", dir)
 		}
 	}
 }

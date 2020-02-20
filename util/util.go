@@ -18,6 +18,15 @@ func FileExists(path string) bool {
 	return !info.IsDir()
 }
 
+// DirExists 目录存在
+func DirExists(path string) bool {
+	info, err := os.Stat(path)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return info.IsDir()
+}
+
 // ReadAll 读取文件全部内容（用于单次读取）
 func ReadAll(fi *os.File) []byte {
 	result, err := ioutil.ReadAll(fi)
