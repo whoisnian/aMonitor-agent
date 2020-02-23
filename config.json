@@ -10,7 +10,8 @@
     "RAM": 5,
     "LOAD": 5,
     "NET": 5,
-    "MOUNTS": 5
+    "MOUNTS": 5,
+    "DISK": 5
   },
   "Token": ""
 }

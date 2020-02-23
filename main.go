@@ -38,6 +38,7 @@ func main() {
 	go collector.StartLoad(msgChan)
 	go collector.StartNet(msgChan)
 	go collector.StartMounts(msgChan)
+	go collector.StartDisk(msgChan)
 
 	// 额外插件信息上报接口
 	handler := func(w http.ResponseWriter, r *http.Request) {

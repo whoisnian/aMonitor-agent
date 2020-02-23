@@ -15,6 +15,7 @@ type Interval struct {
 	LOAD   int64
 	NET    int64
 	MOUNTS int64
+	DISK   int64
 }
 
 // Config agent配置项
