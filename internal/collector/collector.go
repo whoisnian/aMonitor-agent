@@ -3,8 +3,8 @@ package collector
 import (
 	"log"
 
-	"github.com/whoisnian/aMonitor-agent/config"
-	"github.com/whoisnian/aMonitor-agent/util"
+	"github.com/whoisnian/aMonitor-agent/internal/config"
+	"github.com/whoisnian/aMonitor-agent/internal/util"
 )
 
 const statFile = "/proc/stat"

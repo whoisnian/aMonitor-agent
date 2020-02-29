@@ -4,8 +4,9 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 
-	"github.com/whoisnian/aMonitor-agent/util"
+	"github.com/whoisnian/aMonitor-agent/internal/util"
 )
 
 type basicInfo struct {
@@ -16,8 +17,8 @@ type basicInfo struct {
 	CPUCores int64  // CPU核心数
 }
 
-// StartBasic 上报服务器基本信息
-func StartBasic(msgChan chan interface{}) {
+// RunBasic 上报服务器基本信息
+func RunBasic(msgChan chan interface{}) {
 	var basic basicInfo
 
 	// 从/etc/os-release中读取发行版名称
@@ -34,12 +35,15 @@ func StartBasic(msgChan chan interface{}) {
 			continue
 		}
 
-		res := strings.SplitN(content[pos:i], "=", 2)
+		arr := strings.SplitN(content[pos:i], "=", 2)
 		pos = i + 1
+		if len(arr) < 2 {
+			continue
+		}
 
-		switch res[0] {
+		switch arr[0] {
 		case "PRETTY_NAME":
-			basic.Distro = strings.Trim(res[1], "\"")
+			basic.Distro = strings.Trim(arr[1], "\"")
 			break
 		}
 	}
@@ -78,16 +82,23 @@ func StartBasic(msgChan chan interface{}) {
 			continue
 		}
 
-		res := strings.SplitN(content[pos:i], ":", 2)
+		arr := strings.SplitN(content[pos:i], ":", 2)
 		pos = i + 1
+		if len(arr) < 2 {
+			continue
+		}
 
-		switch strings.TrimSpace(res[0]) {
+		switch strings.TrimSpace(arr[0]) {
 		case "model name":
-			basic.CPUModel = strings.TrimSpace(res[1])
+			basic.CPUModel = strings.TrimSpace(arr[1])
 		case "cpu cores":
-			util.StrToNumber(res[1], &basic.CPUCores)
+			util.StrToNumber(arr[1], &basic.CPUCores)
 		}
 	}
 
-	msgChan <- basic
+	select {
+	case msgChan <- basic:
+	case <-time.After(time.Second):
+		log.Println("Timeout when send basicInfo to msgChan.")
+	}
 }

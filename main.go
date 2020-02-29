@@ -1,16 +1,18 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
+	"sync"
 
-	"github.com/whoisnian/aMonitor-agent/collector"
-	"github.com/whoisnian/aMonitor-agent/config"
-	"github.com/whoisnian/aMonitor-agent/sender"
+	"github.com/whoisnian/aMonitor-agent/internal/collector"
+	"github.com/whoisnian/aMonitor-agent/internal/config"
+	"github.com/whoisnian/aMonitor-agent/internal/sender"
 )
 
 // CONFIG 全局配置项
@@ -26,19 +28,26 @@ func main() {
 	// 消息缓冲区
 	msgChan := make(chan interface{}, 64)
 
+	// 使用context在程序停止时通知goroutine
+	ctx, cancel := context.WithCancel(context.Background())
+	wg := new(sync.WaitGroup)
+
 	// sender监控缓冲区并发送其中数据
 	sender.Init(CONFIG)
-	go sender.WaitAndSend(msgChan)
+	wg.Add(1)
+	go sender.WaitAndSend(ctx, wg, msgChan)
 
 	// collector开始收集数据
 	collector.Init(CONFIG)
-	go collector.StartBasic(msgChan)
-	go collector.StartCPU(msgChan)
-	go collector.StartRAM(msgChan)
-	go collector.StartLoad(msgChan)
-	go collector.StartNet(msgChan)
-	go collector.StartMounts(msgChan)
-	go collector.StartDisk(msgChan)
+	collector.RunBasic(msgChan)
+
+	wg.Add(6)
+	go collector.StartCPU(ctx, wg, msgChan)
+	go collector.StartMEM(ctx, wg, msgChan)
+	go collector.StartLoad(ctx, wg, msgChan)
+	go collector.StartNet(ctx, wg, msgChan)
+	go collector.StartMounts(ctx, wg, msgChan)
+	go collector.StartDisk(ctx, wg, msgChan)
 
 	// 额外插件信息上报接口
 	handler := func(w http.ResponseWriter, r *http.Request) {
@@ -66,5 +75,6 @@ func main() {
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 	<-interrupt
-	close(msgChan)
+	cancel()
+	wg.Wait()
 }

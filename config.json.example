@@ -7,7 +7,7 @@
   "ListenAddr": "127.0.0.1:8001",
   "Interval": {
     "CPU": 5,
-    "RAM": 5,
+    "MEM": 5,
     "LOAD": 5,
     "NET": 5,
     "MOUNTS": 5,

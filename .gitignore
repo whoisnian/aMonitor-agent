@@ -3,3 +3,6 @@
 
 # Ignore binary
 aMonitor-agent
+
+# Ignore config
+config.json

@@ -1,16 +1,18 @@
 package collector
 
 import (
+	"context"
 	"log"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
-	"github.com/whoisnian/aMonitor-agent/util"
+	"github.com/whoisnian/aMonitor-agent/internal/util"
 )
 
-type cpuLoad struct {
-	Avg int64
+type cpuInfo struct {
+	UsedPCT int64
 }
 
 type cpuData struct {
@@ -28,7 +30,8 @@ type cpuData struct {
 }
 
 // StartCPU 上报服务器CPU状态
-func StartCPU(msgChan chan interface{}) {
+func StartCPU(ctx context.Context, wg *sync.WaitGroup, msgChan chan interface{}) {
+	defer wg.Done()
 	fi, err := os.Open(statFile)
 	if err != nil {
 		log.Panicln(err)
@@ -36,32 +39,37 @@ func StartCPU(msgChan chan interface{}) {
 	defer fi.Close()
 
 	var cur, sav cpuData
-	var load cpuLoad
-	var pos int
+	var cpu cpuInfo
 
+	firstRun := true
 	ticker := time.NewTicker(time.Duration(interval.CPU) * time.Second)
-	interrupt := make(chan os.Signal, 1)
 	for {
 		select {
+		case <-ctx.Done():
+			log.Println("Close cpuInfo collector.")
+			return
 		case <-ticker.C:
 			content := string(util.SeekAndReadAll(fi))
+
+			// 从文件第一行读取cpu整体数据
+			pos := 0
 			for pos = 0; pos < len(content); pos++ {
 				if content[pos] == '\n' {
 					break
 				}
 			}
 
-			res := strings.Fields(content[:pos])
-			util.StrToNumber(res[1], &cur.user)
-			util.StrToNumber(res[2], &cur.nice)
-			util.StrToNumber(res[3], &cur.system)
-			util.StrToNumber(res[4], &cur.idle)
-			util.StrToNumber(res[5], &cur.iowait)
-			util.StrToNumber(res[6], &cur.irq)
-			util.StrToNumber(res[7], &cur.softirq)
-			util.StrToNumber(res[8], &cur.steal)
-			util.StrToNumber(res[9], &cur.guest)
-			util.StrToNumber(res[10], &cur.guestnice)
+			arr := strings.Fields(content[:pos])
+			util.StrToNumber(arr[1], &cur.user)
+			util.StrToNumber(arr[2], &cur.nice)
+			util.StrToNumber(arr[3], &cur.system)
+			util.StrToNumber(arr[4], &cur.idle)
+			util.StrToNumber(arr[5], &cur.iowait)
+			util.StrToNumber(arr[6], &cur.irq)
+			util.StrToNumber(arr[7], &cur.softirq)
+			util.StrToNumber(arr[8], &cur.steal)
+			util.StrToNumber(arr[9], &cur.guest)
+			util.StrToNumber(arr[10], &cur.guestnice)
 
 			cur.total = cur.user + cur.nice + cur.system + cur.idle + cur.iowait + cur.irq + cur.softirq + cur.steal
 
@@ -72,17 +80,20 @@ func StartCPU(msgChan chan interface{}) {
 			guestPeriod := (cur.guest + cur.guestnice) - (sav.guest + sav.guestnice)
 			totalPeriod := cur.total - sav.total
 
-			load.Avg = int64((nicePeriod + userPeriod + systemAllPeriod +
+			cpu.UsedPCT = int64((nicePeriod + userPeriod + systemAllPeriod +
 				stealPeriod + guestPeriod) * 10000 / totalPeriod)
 
-			if sav.total > 0 {
-				msgChan <- load
-			}
-
 			sav = cur
-		case <-interrupt:
-			log.Println("interrupt")
-			return
+
+			if firstRun {
+				firstRun = false
+			} else {
+				select {
+				case msgChan <- cpu:
+				case <-time.After(time.Second):
+					log.Println("Timeout when send cpuInfo to msgChan.")
+				}
+			}
 		}
 	}
 }
