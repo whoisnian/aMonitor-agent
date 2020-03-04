@@ -4,23 +4,48 @@ import (
 	"context"
 	"log"
 	"sync"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/whoisnian/aMonitor-agent/internal/config"
+	"github.com/whoisnian/aMonitor-agent/internal/util"
 )
 
+// 与storage建立的websocket连接
 var conn *websocket.Conn
 
+// 身份标识符
+var token string
+
+// Packet 数据包
+type Packet struct {
+	Category  string      // 数据类型
+	MetaData  interface{} // 元数据
+	Timestamp int64       // 时间戳
+	Token     string      // 身份标识
+}
+
+// 将collector收集到的数据封装为数据包
+func createPacket(msg interface{}) Packet {
+	return Packet{
+		Category:  util.TypeOf(msg),
+		MetaData:  msg,
+		Timestamp: time.Now().Unix(),
+		Token:     token,
+	}
+}
+
+// 发送消息
 func send(msg interface{}) {
 	var err error
-	// []byte和string直接作为文本消息发送，否则转换为json后再发送
+	// []byte和string直接作为文本消息发送，否则创建数据包转换为json后再发送
 	switch v := msg.(type) {
 	case []byte:
 		err = conn.WriteMessage(websocket.TextMessage, v)
 	case string:
 		err = conn.WriteMessage(websocket.TextMessage, []byte(v))
 	default:
-		err = conn.WriteJSON(v)
+		err = conn.WriteJSON(createPacket(v))
 	}
 	if err != nil {
 		log.Panicln(err)
@@ -29,6 +54,8 @@ func send(msg interface{}) {
 
 // Init 初始化websocket连接
 func Init(CONFIG *config.Config) {
+	token = CONFIG.Token
+
 	var err error
 	conn, _, err = websocket.DefaultDialer.Dial(CONFIG.StroageURL, nil)
 	if err != nil {

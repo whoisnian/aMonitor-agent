@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"reflect"
 	"strconv"
 	"strings"
 )
@@ -71,4 +72,9 @@ func StrToNumber(str string, numP interface{}) {
 	if err != nil {
 		log.Panicln(err)
 	}
+}
+
+// TypeOf 获取interface的类型
+func TypeOf(i interface{}) string {
+	return reflect.TypeOf(i).Name()
 }
