@@ -25,10 +25,10 @@ type Packet struct {
 	Token     string      // 身份标识
 }
 
-// 将collector收集到的数据封装为数据包
-func createPacket(msg interface{}) Packet {
+// CreatePacket 将collector收集到的数据封装为数据包
+func CreatePacket(msg interface{}, category string) Packet {
 	return Packet{
-		Category:  util.TypeOf(msg),
+		Category:  category,
 		MetaData:  msg,
 		Timestamp: time.Now().Unix(),
 		Token:     token,
@@ -44,8 +44,10 @@ func send(msg interface{}) {
 		err = conn.WriteMessage(websocket.TextMessage, v)
 	case string:
 		err = conn.WriteMessage(websocket.TextMessage, []byte(v))
+	case Packet:
+		err = conn.WriteJSON(v)
 	default:
-		err = conn.WriteJSON(createPacket(v))
+		err = conn.WriteJSON(CreatePacket(v, util.TypeOf(v)))
 	}
 	if err != nil {
 		log.Panicln(err)

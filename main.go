@@ -3,9 +3,6 @@ package main
 import (
 	"context"
 	"flag"
-	"io/ioutil"
-	"log"
-	"net/http"
 	"os"
 	"os/signal"
 	"sync"
@@ -41,40 +38,23 @@ func main() {
 	collector.Init(CONFIG)
 	collector.RunBasic(msgChan)
 
-	wg.Add(6)
+	wg.Add(7)
 	go collector.StartCPU(ctx, wg, msgChan)
 	go collector.StartMEM(ctx, wg, msgChan)
 	go collector.StartLoad(ctx, wg, msgChan)
 	go collector.StartNet(ctx, wg, msgChan)
 	go collector.StartMounts(ctx, wg, msgChan)
 	go collector.StartDisk(ctx, wg, msgChan)
-
-	// 额外插件信息上报接口
-	handler := func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost {
-			body, err := ioutil.ReadAll(r.Body)
-			if err != nil {
-				w.WriteHeader(http.StatusBadRequest)
-				return
-			}
-			msgChan <- body
-		} else {
-			w.WriteHeader(http.StatusNotFound)
-		}
-	}
-	http.HandleFunc("/", handler)
-
-	go func() {
-		err := http.ListenAndServe(CONFIG.ListenAddr, nil)
-		if err != nil {
-			log.Panicln(err)
-		}
-	}()
+	go collector.StartPluginListen(ctx, wg, msgChan)
 
 	// 拦截Interrupt信号
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 	<-interrupt
+
+	// 通知goroutine结束
 	cancel()
+
+	// 等待关键goroutine结束
 	wg.Wait()
 }

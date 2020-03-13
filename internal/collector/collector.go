@@ -22,10 +22,12 @@ const diskstatsFile = "/proc/diskstats"
 const sysNetDir = "/sys/class/net/"
 
 var interval config.Interval
+var listenAddr string
 
 // Init 检查依赖是否存在
 func Init(CONFIG *config.Config) {
 	interval = CONFIG.Interval
+	listenAddr = CONFIG.ListenAddr
 
 	fileArray := []string{
 		statFile,

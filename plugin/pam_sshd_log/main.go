@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
+	"strings"
 	"unsafe"
 )
 
@@ -15,41 +16,64 @@ import (
 #define PAM_SM_SESSION
 #include <security/pam_appl.h>
 
-char *get_user(pam_handle_t *pamh);
-char *get_rhost(pam_handle_t *pamh);
+char *string_from_argv(int i, char **argv);
+char *get_username(pam_handle_t *pamh);
+char *get_remote_host(pam_handle_t *pamh);
 char *get_auth_info(pam_handle_t *pamh);
 */
 import "C"
 
 type sshdInfo struct {
-	User     string
-	RHost    string
-	AuthInfo string
+	Username   string
+	RemoteHost string
+	AuthInfo   string
+}
+
+func sliceFromArgv(argc C.int, argv **C.char) []string {
+	res := make([]string, 0, argc)
+	for i := 0; i < int(argc); i++ {
+		cStr := C.string_from_argv(C.int(i), argv)
+		defer C.free(unsafe.Pointer(cStr))
+		res = append(res, C.GoString(cStr))
+	}
+	return res
 }
 
 //export pam_sm_open_session
 func pam_sm_open_session(pamh *C.pam_handle_t, flags C.int, argc C.int, argv **C.char) C.int {
 	var sshd sshdInfo
-	cUser := C.get_user(pamh)
-	if cUser != nil {
-		defer C.free(unsafe.Pointer(cUser))
+	cUsername := C.get_username(pamh)
+	if cUsername != nil {
+		defer C.free(unsafe.Pointer(cUsername))
 	}
-	sshd.User = C.GoString(cUser)
+	sshd.Username = strings.TrimSpace(C.GoString(cUsername))
 
-	cRHost := C.get_rhost(pamh)
-	if cRHost != nil {
-		defer C.free(unsafe.Pointer(cRHost))
+	cRemoteHost := C.get_remote_host(pamh)
+	if cRemoteHost != nil {
+		defer C.free(unsafe.Pointer(cRemoteHost))
 	}
-	sshd.RHost = C.GoString(cRHost)
+	sshd.RemoteHost = strings.TrimSpace(C.GoString(cRemoteHost))
 
 	cAuthInfo := C.get_auth_info(pamh)
 	if cAuthInfo != nil {
 		defer C.free(unsafe.Pointer(cAuthInfo))
 	}
-	sshd.AuthInfo = C.GoString(cAuthInfo)
+	sshd.AuthInfo = strings.TrimSpace(C.GoString(cAuthInfo))
 
-	jsonValue, _ := json.Marshal(sshd)
-	http.Post("http://127.0.0.1:8001", "application/json", bytes.NewBuffer(jsonValue))
+	addr := "127.0.0.1:8001"
+	for _, arg := range sliceFromArgv(argc, argv) {
+		opt := strings.Split(arg, "=")
+		switch opt[0] {
+		case "addr":
+			addr = opt[1]
+		}
+	}
+
+	content, _ := json.Marshal(sshd)
+	resp, err := http.Post("http://"+addr+"?category=sshdInfo", "application/json", bytes.NewBuffer(content))
+	if err == nil {
+		defer resp.Body.Close()
+	}
 
 	return C.PAM_IGNORE
 }
