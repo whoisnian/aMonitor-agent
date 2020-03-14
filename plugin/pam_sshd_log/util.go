@@ -27,5 +27,11 @@ char *get_auth_info(pam_handle_t *pamh) {
   auth_info = pam_getenv(pamh, "SSH_AUTH_INFO_0");
   return strdup(auth_info);
 }
+
+char *get_service_name(pam_handle_t *pamh) {
+  const char *service_name;
+  service_name = pam_getenv(pamh, "PAM_SERVICE");
+  return strdup(service_name);
+}
 */
 import "C"

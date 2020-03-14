@@ -20,6 +20,7 @@ char *string_from_argv(int i, char **argv);
 char *get_username(pam_handle_t *pamh);
 char *get_remote_host(pam_handle_t *pamh);
 char *get_auth_info(pam_handle_t *pamh);
+char *get_service_name(pam_handle_t *pamh);
 */
 import "C"
 
@@ -41,6 +42,14 @@ func sliceFromArgv(argc C.int, argv **C.char) []string {
 
 //export pam_sm_open_session
 func pam_sm_open_session(pamh *C.pam_handle_t, flags C.int, argc C.int, argv **C.char) C.int {
+	cServiceName := C.get_service_name(pamh)
+	if cServiceName != nil {
+		defer C.free(unsafe.Pointer(cServiceName))
+	}
+	if "sshd" != strings.TrimSpace(C.GoString(cServiceName)) {
+		return C.PAM_IGNORE
+	}
+
 	var sshd sshdInfo
 	cUsername := C.get_username(pamh)
 	if cUsername != nil {
