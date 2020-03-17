@@ -1,0 +1,13 @@
+[Unit]
+Description=Send notification to aMonitor-agent when target file is modified or deleted.
+# After=network.target
+
+[Service]
+Type=simple
+Environment="ADDR=127.0.0.1:8002"
+Environment="FILELIST=/root/.ssh/authorized_keys:/etc/shadow:/etc/sudoers"
+ExecStart=/opt/aMonitor-agent/plugin/file-md-log
+PIDFile=/run/file-md-log.pid
+
+[Install]
+WantedBy=multi-user.target
