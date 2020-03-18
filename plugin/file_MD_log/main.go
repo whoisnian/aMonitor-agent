@@ -96,6 +96,7 @@ func main() {
 	var fileMD fileMDInfo
 	var buf [4096]byte
 	var offset uint32
+	var knownEvent bool
 
 	for {
 		n, err := unix.Read(fd, buf[:])
@@ -107,15 +108,17 @@ func main() {
 		for int(offset) <= n-unix.SizeofInotifyEvent {
 			event := (*unix.InotifyEvent)(unsafe.Pointer(&buf[offset]))
 
-			var ok bool
-			if fileMD.Path, ok = wdNameMap[int(event.Wd)]; ok {
+			var exist bool
+			if fileMD.Path, exist = wdNameMap[int(event.Wd)]; exist {
 				if event.Len > 0 {
 					bytes := (*[unix.PathMax]byte)(unsafe.Pointer(&buf[offset+unix.SizeofInotifyEvent]))
 					fileMD.Path = path.Join(fileMD.Path, strings.TrimRight(string(bytes[:event.Len-1]), "\000"))
 				}
 
 				if wd, ok := nameWdMap[fileMD.Path]; ok {
-					if unix.IN_CREATE == event.Mask&unix.IN_CREATE {
+					knownEvent = true
+					if unix.IN_ISDIR != event.Mask&unix.IN_ISDIR &&
+						unix.IN_CREATE == event.Mask&unix.IN_CREATE {
 						// 删除旧文件的监视器
 						unix.InotifyRmWatch(fd, uint32(wd))
 						delete(wdNameMap, wd)
@@ -132,8 +135,13 @@ func main() {
 						fileMD.Event = "delete"
 					} else if unix.IN_MOVE_SELF == event.Mask&unix.IN_MOVE_SELF {
 						fileMD.Event = "move"
+					} else {
+						knownEvent = false
 					}
-					sendInfo(fileMD)
+
+					if knownEvent {
+						sendInfo(fileMD)
+					}
 				}
 			}
 
