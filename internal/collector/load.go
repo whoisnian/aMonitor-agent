@@ -12,9 +12,9 @@ import (
 )
 
 type loadInfo struct {
-	Avg1  float64
-	Avg5  float64
-	Avg15 float64
+	Avg1  int64
+	Avg5  int64
+	Avg15 int64
 }
 
 // StartLoad 上报服务器平均负载
@@ -27,6 +27,7 @@ func StartLoad(ctx context.Context, wg *sync.WaitGroup, msgChan chan interface{}
 	defer fi.Close()
 
 	var load loadInfo
+	var value float64
 
 	ticker := time.NewTicker(time.Duration(interval.LOAD) * time.Second)
 	for {
@@ -38,9 +39,12 @@ func StartLoad(ctx context.Context, wg *sync.WaitGroup, msgChan chan interface{}
 			content := string(util.SeekAndReadAll(fi))
 
 			arr := strings.Fields(content)
-			util.StrToNumber(arr[0], &load.Avg1)
-			util.StrToNumber(arr[1], &load.Avg5)
-			util.StrToNumber(arr[2], &load.Avg15)
+			util.StrToNumber(arr[0], &value)
+			load.Avg1 = int64(value * 100)
+			util.StrToNumber(arr[1], &value)
+			load.Avg5 = int64(value * 100)
+			util.StrToNumber(arr[2], &value)
+			load.Avg15 = int64(value * 100)
 
 			select {
 			case msgChan <- load:
