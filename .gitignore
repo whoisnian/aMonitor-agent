@@ -1,6 +1,9 @@
 # Ignore JetBrains
 .idea
 
+# Ignore vscode
+.vscode
+
 # Ignore binary
 aMonitor-agent
 
