@@ -79,9 +79,17 @@ func StartMEM(ctx context.Context, wg *sync.WaitGroup, msgChan chan interface{})
 				}
 			}
 			mem.RAMUsed = mem.RAMTotal - mem.RAMFree - mem.RAMCached
-			mem.RAMUsedPCT = (mem.RAMTotal - mem.RAMAvail) * 10000 / mem.RAMTotal
 			mem.SwapUsed = mem.SwapTotal - mem.SwapFree
-			mem.SwapUsedPCT = mem.SwapUsed * 10000 / mem.SwapTotal
+			if mem.RAMTotal <= 0 {
+				mem.RAMUsedPCT = 0
+			} else {
+				mem.RAMUsedPCT = (mem.RAMTotal - mem.RAMAvail) * 10000 / mem.RAMTotal
+			}
+			if mem.SwapTotal <= 0 {
+				mem.SwapUsedPCT = 0
+			} else {
+				mem.SwapUsedPCT = mem.SwapUsed * 10000 / mem.SwapTotal
+			}
 
 			select {
 			case msgChan <- mem:
