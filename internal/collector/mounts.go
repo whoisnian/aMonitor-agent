@@ -75,9 +75,9 @@ func StartMounts(ctx context.Context, wg *sync.WaitGroup, msgChan chan interface
 			for index := range mounts.Mounts {
 				var t unix.Statfs_t
 				unix.Statfs(mounts.Mounts[index].Point, &t)
-				mounts.Mounts[index].TotalSize = int64(t.Blocks>>10) * t.Bsize
-				mounts.Mounts[index].FreeSize = int64(t.Bfree>>10) * t.Bsize
-				mounts.Mounts[index].AvailSize = int64(t.Bavail>>10) * t.Bsize
+				mounts.Mounts[index].TotalSize = int64(t.Blocks>>10) * int64(t.Bsize)
+				mounts.Mounts[index].FreeSize = int64(t.Bfree>>10) * int64(t.Bsize)
+				mounts.Mounts[index].AvailSize = int64(t.Bavail>>10) * int64(t.Bsize)
 				mounts.Mounts[index].TotalNodes = int64(t.Files)
 				mounts.Mounts[index].FreeNodes = int64(t.Ffree)
 				if t.Blocks == 0 {
