@@ -20,11 +20,11 @@ type Interval struct {
 
 // Config agent配置项
 type Config struct {
-	StroageURL string   // aMonitor-stroage服务器websocket上报地址，如"ws://127.0.0.1:3000"
-	SourceURL  []string // aMonitor-source服务器资源下载地址，如"http://192.168.1.1:8080"
-	ListenAddr string   // 本地监听地址，为插件提供上报消息的接口，如"127.0.0.1:8008"
-	Interval   Interval // 各项监控刷新间隔，单位为秒
-	Token      string   // 身份令牌，agent首次启动时自动获取，用来区分不同agent
+	StroageAddr string   // aMonitor-stroage服务器地址，如"127.0.0.1:3000"
+	SourceAddrs []string // aMonitor-source服务器地址列表，单个地址如"192.168.1.1:8080"
+	ListenAddr  string   // 本地监听地址，为插件提供上报消息的接口，如"127.0.0.1:8008"
+	Interval    Interval // 各项监控刷新间隔，单位为秒
+	Token       string   // 身份令牌，agent首次启动时自动获取，用来区分不同agent
 }
 
 // Load 加载配置文件

@@ -59,7 +59,7 @@ func Init(CONFIG *config.Config) {
 	token = CONFIG.Token
 
 	var err error
-	conn, _, err = websocket.DefaultDialer.Dial(CONFIG.StroageURL, nil)
+	conn, _, err = websocket.DefaultDialer.Dial("ws://"+CONFIG.StroageAddr+"/ws", nil)
 	if err != nil {
 		log.Panicln(err)
 	}
