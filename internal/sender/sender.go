@@ -3,6 +3,7 @@ package sender
 import (
 	"context"
 	"log"
+	"net/http"
 	"sync"
 	"time"
 
@@ -14,15 +15,11 @@ import (
 // 与storage建立的websocket连接
 var conn *websocket.Conn
 
-// 身份标识符
-var token string
-
 // Packet 数据包
 type Packet struct {
 	Category  string      // 数据类型
 	MetaData  interface{} // 元数据
 	Timestamp int64       // 时间戳
-	Token     string      // 身份标识
 }
 
 // CreatePacket 将collector收集到的数据封装为数据包
@@ -31,7 +28,6 @@ func CreatePacket(msg interface{}, category string) Packet {
 		Category:  category,
 		MetaData:  msg,
 		Timestamp: time.Now().Unix(),
-		Token:     token,
 	}
 }
 
@@ -56,10 +52,10 @@ func send(msg interface{}) {
 
 // Init 初始化websocket连接
 func Init(CONFIG *config.Config) {
-	token = CONFIG.Token
+	header := http.Header{"Authorization": {"Bearer " + CONFIG.Token}}
 
 	var err error
-	conn, _, err = websocket.DefaultDialer.Dial("ws://"+CONFIG.StroageAddr+"/ws", nil)
+	conn, _, err = websocket.DefaultDialer.Dial("ws://"+CONFIG.StroageAddr+"/ws", header)
 	if err != nil {
 		log.Panicln(err)
 	}
