@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 
@@ -12,7 +13,7 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-func handler(w http.ResponseWriter, r *http.Request) {
+func wsHandler(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
@@ -28,8 +29,25 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func registerHandler(w http.ResponseWriter, r *http.Request) {
+	var req struct{ MachineID string }
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
+
+	res := struct{ Token string }{req.MachineID}
+
+	content, _ := json.Marshal(res)
+	w.Write(content)
+
+	log.Println("SendToken: " + req.MachineID)
+}
+
 func main() {
-	http.HandleFunc("/", handler)
+	http.HandleFunc("/ws", wsHandler)
+	http.HandleFunc("/register", registerHandler)
 
 	err := http.ListenAndServe("127.0.0.1:3000", nil)
 	if err != nil {

@@ -3,12 +3,14 @@ package main
 import (
 	"context"
 	"flag"
+	"log"
 	"os"
 	"os/signal"
 	"sync"
 
 	"github.com/whoisnian/aMonitor-agent/internal/collector"
 	"github.com/whoisnian/aMonitor-agent/internal/config"
+	"github.com/whoisnian/aMonitor-agent/internal/register"
 	"github.com/whoisnian/aMonitor-agent/internal/sender"
 )
 
@@ -21,6 +23,11 @@ func main() {
 	// 读取agent配置
 	flag.Parse()
 	CONFIG = config.Load(*configFilePath)
+	if CONFIG.Token == "" {
+		CONFIG.Token = register.FetchToken(CONFIG.StroageAddr)
+		config.Save(*configFilePath, CONFIG)
+		log.Println("FetchToken: " + CONFIG.Token)
+	}
 
 	// 消息缓冲区
 	msgChan := make(chan interface{}, 64)
