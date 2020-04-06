@@ -53,7 +53,7 @@ func addFileWatch(fd int, pathname string) int {
 
 // 监控文件父级目录的创建事件，当发现目标文件被新建时不再监控旧文件，改为监控新文件
 func addDirWatch(fd int, pathname string) int {
-	wd, err := unix.InotifyAddWatch(fd, pathname, unix.IN_CREATE)
+	wd, err := unix.InotifyAddWatch(fd, pathname, unix.IN_CREATE|unix.IN_MOVED_TO)
 	if err != nil {
 		log.Println("ERR: addDirWatch", fd, pathname, err)
 	}
@@ -118,7 +118,8 @@ func main() {
 				if wd, ok := nameWdMap[fileMD.Path]; ok {
 					knownEvent = true
 					if unix.IN_ISDIR != event.Mask&unix.IN_ISDIR &&
-						unix.IN_CREATE == event.Mask&unix.IN_CREATE {
+						(unix.IN_CREATE == event.Mask&unix.IN_CREATE ||
+							unix.IN_MOVED_TO == event.Mask&unix.IN_MOVED_TO) {
 						// 删除旧文件的监视器
 						unix.InotifyRmWatch(fd, uint32(wd))
 						delete(wdNameMap, wd)
