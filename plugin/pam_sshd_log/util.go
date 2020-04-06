@@ -30,7 +30,7 @@ char *get_auth_info(pam_handle_t *pamh) {
 
 char *get_service_name(pam_handle_t *pamh) {
   const char *service_name;
-  service_name = pam_getenv(pamh, "PAM_SERVICE");
+  if(PAM_SUCCESS != pam_get_item(pamh, PAM_SERVICE, (const void**)&service_name)) return NULL;
   return strdup(service_name);
 }
 */
