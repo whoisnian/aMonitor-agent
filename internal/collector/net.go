@@ -13,15 +13,19 @@ import (
 )
 
 type netInfo struct {
-	Rrate int64
-	Rsum  int64
-	Trate int64
-	Tsum  int64
+	Rrate    int64
+	Rsum     int64
+	Rpackets int64
+	Trate    int64
+	Tsum     int64
+	Tpackets int64
 }
 
 type netData struct {
-	rBytes uint64
-	tBytes uint64
+	rBytes  uint64
+	tBytes  uint64
+	rPacket uint64
+	tPacket uint64
 }
 
 // StartNet 上报服务器网络流量信息
@@ -67,6 +71,7 @@ func StartNet(ctx context.Context, wg *sync.WaitGroup, msgChan chan interface{})
 			return
 		case <-ticker.C:
 			net.Rsum, net.Tsum = 0, 0
+			net.Rpackets, net.Tpackets = 0, 0
 
 			content := string(util.SeekAndReadAll(fi))
 			pos := 0
@@ -95,10 +100,18 @@ func StartNet(ctx context.Context, wg *sync.WaitGroup, msgChan chan interface{})
 				util.StrToNumber(arr[9], &value)
 				net.Tsum += int64(value - ifMap[ifName].tBytes)
 				ifMap[ifName].tBytes = value
+				util.StrToNumber(arr[2], &value)
+				net.Rpackets += int64(value - ifMap[ifName].rPacket)
+				ifMap[ifName].rPacket = value
+				util.StrToNumber(arr[10], &value)
+				net.Tpackets += int64(value - ifMap[ifName].tPacket)
+				ifMap[ifName].tPacket = value
 			}
 
 			net.Rrate = net.Rsum / interval.NET
 			net.Trate = net.Tsum / interval.NET
+			net.Rpackets = net.Rpackets / interval.NET
+			net.Tpackets = net.Tpackets / interval.NET
 
 			if firstRun {
 				firstRun = false
