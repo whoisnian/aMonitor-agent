@@ -14,8 +14,10 @@ import (
 type diskInfo struct {
 	ReadPS    int64
 	ReadSize  int64
+	ReadRate  int64
 	WritePS   int64
 	WriteSize int64
+	WriteRate int64
 }
 
 type diskData struct {
@@ -83,6 +85,8 @@ func StartDisk(ctx context.Context, wg *sync.WaitGroup, msgChan chan interface{}
 			// sec * 512 (byte) / 1024 = sec / 2 (KB)
 			disk.ReadSize = int64(cur.RDS-sav.RDS) / 2
 			disk.WriteSize = int64(cur.WRS-sav.WRS) / 2
+			disk.ReadRate = int64(cur.RDS-sav.RDS) * 512 / interval.DISK
+			disk.WriteRate = int64(cur.WRS-sav.WRS) * 512 / interval.DISK
 
 			sav = cur
 
