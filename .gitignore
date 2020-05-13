@@ -9,3 +9,9 @@ aMonitor-agent
 
 # Ignore config
 config.json
+
+# Ignore output
+main
+file-md-log
+pam_sshd_log.h
+pam_sshd_log.so
