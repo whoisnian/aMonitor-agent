@@ -34,6 +34,7 @@ func CreatePacket(msg interface{}, category string) Packet {
 // 发送消息
 func send(msg interface{}) {
 	var err error
+	conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
 	// []byte和string直接作为文本消息发送，否则创建数据包转换为json后再发送
 	switch v := msg.(type) {
 	case []byte:
