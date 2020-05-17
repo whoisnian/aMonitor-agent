@@ -15,6 +15,9 @@ import (
 // 与storage建立的websocket连接
 var conn *websocket.Conn
 
+// websocket连接健康检测
+var pongWait, lastPong int64 = 0, 0
+
 // Packet 数据包
 type Packet struct {
 	Category  string      // 数据类型
@@ -31,8 +34,29 @@ func CreatePacket(msg interface{}, category string) Packet {
 	}
 }
 
+// 健康检测
+func healthCheck() {
+	conn.SetPongHandler(func(data string) error {
+		lastPong = time.Now().Unix()
+		return nil
+	})
+	for {
+		_, _, err := conn.ReadMessage()
+		if err != nil {
+			log.Panicln(err)
+			break
+		}
+	}
+}
+
 // 发送消息
 func send(msg interface{}) {
+	if lastPong == 0 {
+		lastPong = time.Now().Unix()
+	} else if time.Now().Unix()-lastPong > pongWait {
+		log.Panicln("Pong response timeout.")
+	}
+
 	var err error
 	conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
 	// []byte和string直接作为文本消息发送，否则创建数据包转换为json后再发送
@@ -60,6 +84,15 @@ func Init(CONFIG *config.Config) {
 	if err != nil {
 		log.Panicln(err)
 	}
+
+	pongWait = CONFIG.Interval.CPU
+	pongWait = util.Min(pongWait, CONFIG.Interval.MEM)
+	pongWait = util.Min(pongWait, CONFIG.Interval.LOAD)
+	pongWait = util.Min(pongWait, CONFIG.Interval.NET)
+	pongWait = util.Min(pongWait, CONFIG.Interval.MOUNTS)
+	pongWait = util.Min(pongWait, CONFIG.Interval.DISK)
+	pongWait = pongWait * 2
+	go healthCheck()
 }
 
 // WaitAndSend 等待channel并发送数据

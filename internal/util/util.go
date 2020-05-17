@@ -78,3 +78,11 @@ func StrToNumber(str string, numP interface{}) {
 func TypeOf(i interface{}) string {
 	return reflect.TypeOf(i).Name()
 }
+
+// Min 获取两者当中的较小值
+func Min(x int64, y int64) int64 {
+	if x < y {
+		return x
+	}
+	return y
+}
