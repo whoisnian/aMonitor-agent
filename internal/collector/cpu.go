@@ -80,8 +80,12 @@ func StartCPU(ctx context.Context, wg *sync.WaitGroup, msgChan chan interface{})
 			guestPeriod := (cur.guest + cur.guestnice) - (sav.guest + sav.guestnice)
 			totalPeriod := cur.total - sav.total
 
-			cpu.UsedPCT = int64((nicePeriod + userPeriod + systemAllPeriod +
-				stealPeriod + guestPeriod) * 10000 / totalPeriod)
+			if totalPeriod <= 0 {
+				cpu.UsedPCT = 0
+			} else {
+				cpu.UsedPCT = int64((nicePeriod + userPeriod + systemAllPeriod +
+					stealPeriod + guestPeriod) * 10000 / totalPeriod)
+			}
 
 			sav = cur
 
