@@ -63,7 +63,7 @@ func StartNet(ctx context.Context, wg *sync.WaitGroup, msgChan chan interface{})
 	var value uint64
 
 	firstRun := true
-	ticker := time.NewTicker(time.Duration(interval.NET) * time.Second)
+	ticker := time.NewTicker(time.Duration(interval.NET) * time.Millisecond)
 	for {
 		select {
 		case <-ctx.Done():
@@ -108,10 +108,10 @@ func StartNet(ctx context.Context, wg *sync.WaitGroup, msgChan chan interface{})
 				ifMap[ifName].tPacket = value
 			}
 
-			net.Rrate = net.Rsum / interval.NET
-			net.Trate = net.Tsum / interval.NET
-			net.Rpackets = net.Rpackets / interval.NET
-			net.Tpackets = net.Tpackets / interval.NET
+			net.Rrate = net.Rsum * 1000 / interval.NET
+			net.Trate = net.Tsum * 1000 / interval.NET
+			net.Rpackets = net.Rpackets * 1000 / interval.NET
+			net.Tpackets = net.Tpackets * 1000 / interval.NET
 
 			if firstRun {
 				firstRun = false

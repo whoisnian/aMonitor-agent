@@ -8,7 +8,7 @@ import (
 	"github.com/whoisnian/aMonitor-agent/internal/util"
 )
 
-// Interval 各项监控刷新间隔，单位为秒
+// Interval 各项监控刷新间隔，单位为毫秒
 type Interval struct {
 	CPU    int64
 	MEM    int64

@@ -116,6 +116,9 @@ func WaitAndSend(ctx context.Context, wg *sync.WaitGroup, msgChan <-chan interfa
 			}
 		case msg := <-msgChan:
 			send(msg)
+			if len(msgChan) > 0 {
+				log.Println("Left", len(msgChan), "msg in mshChan.")
+			}
 		}
 	}
 }

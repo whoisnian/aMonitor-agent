@@ -65,7 +65,7 @@ func StartMounts(ctx context.Context, wg *sync.WaitGroup, msgChan chan interface
 		mounts.Mounts = append(mounts.Mounts, data)
 	}
 
-	ticker := time.NewTicker(time.Duration(interval.MOUNTS) * time.Second)
+	ticker := time.NewTicker(time.Duration(interval.MOUNTS) * time.Millisecond)
 	for {
 		select {
 		case <-ctx.Done():

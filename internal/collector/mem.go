@@ -36,7 +36,7 @@ func StartMEM(ctx context.Context, wg *sync.WaitGroup, msgChan chan interface{})
 	var mem memInfo
 	var value int64
 
-	ticker := time.NewTicker(time.Duration(interval.MEM) * time.Second)
+	ticker := time.NewTicker(time.Duration(interval.MEM) * time.Millisecond)
 	for {
 		select {
 		case <-ctx.Done():

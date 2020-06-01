@@ -42,7 +42,7 @@ func StartCPU(ctx context.Context, wg *sync.WaitGroup, msgChan chan interface{})
 	var cpu cpuInfo
 
 	firstRun := true
-	ticker := time.NewTicker(time.Duration(interval.CPU) * time.Second)
+	ticker := time.NewTicker(time.Duration(interval.CPU) * time.Millisecond)
 	for {
 		select {
 		case <-ctx.Done():

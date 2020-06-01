@@ -29,7 +29,7 @@ func StartLoad(ctx context.Context, wg *sync.WaitGroup, msgChan chan interface{}
 	var load loadInfo
 	var value float64
 
-	ticker := time.NewTicker(time.Duration(interval.LOAD) * time.Second)
+	ticker := time.NewTicker(time.Duration(interval.LOAD) * time.Millisecond)
 	for {
 		select {
 		case <-ctx.Done():

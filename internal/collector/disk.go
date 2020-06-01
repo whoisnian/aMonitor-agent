@@ -41,7 +41,7 @@ func StartDisk(ctx context.Context, wg *sync.WaitGroup, msgChan chan interface{}
 	var value uint64
 
 	firstRun := true
-	ticker := time.NewTicker(time.Duration(interval.DISK) * time.Second)
+	ticker := time.NewTicker(time.Duration(interval.DISK) * time.Millisecond)
 	for {
 		select {
 		case <-ctx.Done():
@@ -79,14 +79,14 @@ func StartDisk(ctx context.Context, wg *sync.WaitGroup, msgChan chan interface{}
 				util.StrToNumber(arr[9], &value)
 				cur.WRS += value
 			}
-			disk.ReadPS = int64(cur.RD-sav.RD) / interval.DISK
-			disk.WritePS = int64(cur.WR-sav.WR) / interval.DISK
+			disk.ReadPS = int64(cur.RD-sav.RD) * 1000 / interval.DISK
+			disk.WritePS = int64(cur.WR-sav.WR) * 1000 / interval.DISK
 			// sector size: 512 bytes
 			// sec * 512 (byte) / 1024 = sec / 2 (KB)
 			disk.ReadSize = int64(cur.RDS-sav.RDS) / 2
 			disk.WriteSize = int64(cur.WRS-sav.WRS) / 2
-			disk.ReadRate = int64(cur.RDS-sav.RDS) * 512 / interval.DISK
-			disk.WriteRate = int64(cur.WRS-sav.WRS) * 512 / interval.DISK
+			disk.ReadRate = int64(cur.RDS-sav.RDS) * 512 * 1000 / interval.DISK
+			disk.WriteRate = int64(cur.WRS-sav.WRS) * 512 * 1000 / interval.DISK
 
 			sav = cur
 
